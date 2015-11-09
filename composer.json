@@ -1,0 +1,42 @@
+{
+    "name": "campaignchain/report-google-analytics",
+    "description": "Access Google Analytics Data",
+    "keywords": ["google", "analytics", "campaignchain"],
+    "type": "campaignchain-report",
+    "license": "Apache-2.0",
+    "homepage": "http://www.campaignchain.com",
+    "authors": [
+        {
+            "name": "CampaignChain Inc.",
+            "email": "info@campaignchain.com",
+            "homepage": "http://www.campaignchain.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/CampaignChain/campaignchain-ce/issues",
+        "docs": "http://doc.campaignchain.com"
+    },
+    "require": {
+        "campaignchain/channel-google-analytics": "dev-master",
+        "campaignchain/location-google-analytics": "dev-master",
+        "google/apiclient": "1.0.*@beta"
+    },
+    "autoload": {
+        "psr-4": { "CampaignChain\\Report\\GoogleAnalyticsBundle\\": "" }
+    },
+    "extra": {
+        "campaignchain": {
+            "kernel": {
+                "classes": [
+                    "CampaignChain\\Report\\GoogleAnalyticsBundle\\CampaignChainReportGoogleAnalyticsBundle"
+                ],
+                "routing":
+                {
+                    "name": "campaignchain_report_google_analytics",
+                    "resource": "@CampaignChainReportGoogleAnalyticsBundle/Resources/config/routing.yml",
+                    "prefix": "/"
+                }
+            }
+        }
+    }
+}

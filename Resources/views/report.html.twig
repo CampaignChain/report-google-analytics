@@ -1,0 +1,124 @@
+{#
+This file is part of the CampaignChain package.
+
+(c) CampaignChain Inc. <info@campaignchain.com>
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+
+{% extends 'CampaignChainCoreBundle:Base:base.html.twig' %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% javascripts '@flot_js' combine=true %}
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@flot_comments_js' %}
+    <!-- flot comments --><script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@flot_tooltip_js' %}
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {% stylesheets '@select2_css' combine=true %}
+    <link href="{{ asset_url }}" type="text/css" rel="stylesheet" />
+    {% endstylesheets %}
+    {% stylesheets '@campaignchain_flot_css' filter="cssrewrite" output="media/css/*.css"
+    'bundles/campaignchaincore/css/*'%}
+    <link href="{{ asset_url }}" type="text/css" rel="stylesheet" />
+    {% endstylesheets %}
+{% endblock %}
+
+{% block body %}
+    {% javascripts '@select2_js' %}
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+
+    {% if report_data is defined and report_data is iterable %}
+        {# // The series point styles available with Flot. #}
+        {% set flot_styles = { 0: 'circle', 1: 'square', 2: 'diamond', 3: 'triangle', 4:'cross' } %}
+        <script type="text/javascript">
+            $(document).ready(function() {
+
+                // Put milestones on top of chart
+                var pos = $('.campaignchain-flot').position();
+                $('.jquery-flot-comment').css({'top': 0});
+
+
+                var d_sessions = [];
+                var d_visits = [];
+                {% for i in report_data %}
+                d_sessions.push([{{ i[0] }}, {{ i[1] }}]);
+                d_visits.push([{{ i[0] }}, {{ i[2] }}]);
+                {% endfor %}
+                $.plot("#placeholder_ga", [
+                    {
+                        label: "Sessions",
+                        data: d_sessions,
+                        lines: { colors: "#222222", fill: false },
+                        points: { colors: '#222222' },
+                    },
+                    {
+                        label: "Visits",
+                        data: d_visits,
+                        lines: { colors: "#f60", fill: false },
+                        points: { colors: '#f60' },
+                    }
+                ], {
+                    grid: {
+                        show: true,
+                        markingsLineWidth: 1,
+                        hoverable: true
+                    },
+                    xaxis: {
+                        mode: "time",
+                        tickSize: [7, "day"],
+                    },
+                    yaxis: {
+                        min: 0,
+                        autoscaleMargin: 0.4,
+                    },
+                    lines: {
+                        show: true
+                    },
+                    points: {
+                        show: true,
+                        radius: 3
+                    },
+                    tooltip: {
+                        show: true
+                    },
+                    tooltipOpts: {
+                        xDateFormat:    '%a, %b %e, %Y',
+                        content:        "<label>%x</label><br/>%s: %y"
+                    },
+                    legend: {
+                        show: true,
+                        position: "nw",
+                        noColumns: 1,
+                        placement: 'outsideGrid'
+                    }
+//                        colors: ["#31708F"],
+                });
+
+
+            });
+
+        </script>
+
+        <div class="row-fluid">
+            <div class="span12">
+                <div id="placeholder_ga" style="width:100%;height:300px;" class="campaignchain-flot"></div>
+            </div>
+        </div>
+
+
+
+
+
+    {% endif %}
+{% endblock %}
