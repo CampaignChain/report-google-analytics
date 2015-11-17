@@ -33,7 +33,7 @@ class AnalyticsApiClient
      */
     private $tokenService;
 
-    const RESOURCE_OWNER = 'GoogleAnalytics';
+    const RESOURCE_OWNER = 'Google';
 
     public function __construct(LocationService $locationService, ApplicationService $applicationService, TokenService $tokenService)
     {

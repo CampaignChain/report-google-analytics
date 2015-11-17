@@ -39,12 +39,6 @@ class GoogleAnalyticsController extends Controller
                     return $er->createQueryBuilder('campaign')
                         ->select('cpgn')
                         ->from('CampaignChain\CoreBundle\Entity\Campaign', 'cpgn')
-                        ->from('CampaignChain\CoreBundle\Entity\CTA', 'cta')
-                        ->from('CampaignChain\CoreBundle\Entity\Operation', 'o')
-                        ->from('CampaignChain\CoreBundle\Entity\Activity', 'a')
-                        ->where('cta.operation = o.id')
-                        ->andWhere('o.activity = a.id')
-                        ->andWhere('a.campaign = cpgn.id')
                         ->orderBy('campaign.startDate', 'ASC');
                 },
                 'property' => 'name',
