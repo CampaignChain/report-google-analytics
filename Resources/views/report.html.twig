@@ -40,6 +40,23 @@ file that was distributed with this source code.
 
     {% if report_data is defined and report_data is iterable %}
         {# // The series point styles available with Flot. #}
+            <form method="POST" class="form-horizontal" role="form" enctype="multipart/form-data">
+                {{ bootstrap_set_style('horizontal') }}
+                {{ bootstrap_set_widget_col(6) }}
+                {{ bootstrap_set_label_col(2) }}
+                {{ form_widget(formMetrics) }}
+                <div class="form-group">
+                    <div class="col-lg-offset-2 col-lg-6">
+                        <div class="btn-group pull-right" role="group" aria-label="...">
+                            {% include 'CampaignChainCoreBundle:Base:form_footer_buttons.html.twig' %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        {% block form_footer %}{% endblock %}
+
+
         {% set flot_styles = { 0: 'circle', 1: 'square', 2: 'diamond', 3: 'triangle', 4:'cross' } %}
         <script type="text/javascript">
             $(document).ready(function() {
@@ -49,26 +66,10 @@ file that was distributed with this source code.
                 $('.jquery-flot-comment').css({'top': 0});
 
 
-                var d_sessions = [];
-                var d_visits = [];
-                {% for i in report_data %}
-                d_sessions.push([{{ i[0] }}, {{ i[1] }}]);
-                d_visits.push([{{ i[0] }}, {{ i[2] }}]);
-                {% endfor %}
-                $.plot("#placeholder_ga", [
-                    {
-                        label: "Sessions",
-                        data: d_sessions,
-                        lines: { colors: "#222222", fill: false },
-                        points: { colors: '#222222' },
-                    },
-                    {
-                        label: "Visits",
-                        data: d_visits,
-                        lines: { colors: "#f60", fill: false },
-                        points: { colors: '#f60' },
-                    }
-                ], {
+
+
+
+                $.plot("#placeholder_ga", {{ report_data|json_encode()|raw  }}, {
                     grid: {
                         show: true,
                         markingsLineWidth: 1,

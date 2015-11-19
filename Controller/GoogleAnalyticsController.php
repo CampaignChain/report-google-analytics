@@ -11,7 +11,9 @@
 namespace CampaignChain\Report\GoogleAnalyticsBundle\Controller;
 
 use CampaignChain\CoreBundle\Entity\Campaign;
-use CampaignChain\Location\GoogleBundle\Entity\Profile;
+use CampaignChain\Location\GoogleAnalyticsBundle\Entity\Profile;
+use CampaignChain\Report\GoogleAnalyticsBundle\Form\Type\MetricType;
+use CampaignChain\Report\GoogleAnalyticsBundle\Form\Type\SegmentType;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +24,7 @@ class GoogleAnalyticsController extends Controller
 
     public function indexAction(Request $request)
     {
+
         $campaign = array();
         $form = $this->createFormBuilder($campaign)
             ->add('locaton', 'entity', array(
@@ -77,7 +80,7 @@ class GoogleAnalyticsController extends Controller
      * @return Response
      * @throws \Exception
      */
-    public function reportAction($locationId, $campaignId)
+    public function reportAction(Request $request, $locationId, $campaignId)
     {
 
         $campaignRepo = $this->getDoctrine()->getRepository('CampaignChainCoreBundle:Campaign');
@@ -91,6 +94,19 @@ class GoogleAnalyticsController extends Controller
         $tokenService = $this->get('campaignchain.security.authentication.client.oauth.token');
         $token = $tokenService->getToken($location);
 
+        //Form for metrics selection
+        $formMetrics = $this->createForm(new MetricType(), $profile);
+        $formMetrics->handleRequest($request);
+
+
+        if ($formMetrics->isValid()){
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($profile);
+            $em->flush();
+
+            return $this->redirectToRoute('campaignchain_report_google_analytics_report', ['locationId' => $locationId, 'campaignId' => $campaignId]);
+        }
+
 
         $analytics = $this->get('campaignchain_report_google_analytics.service_client')->getService($token);
 
@@ -102,28 +118,46 @@ class GoogleAnalyticsController extends Controller
             $profileId = $profiles->getItems()[0]['id'];
 
         }
+        $reportData = [];
+        if (!empty($profile->getMetrics())) {
+
+            $startDate = $campaign->getStartDate()->format('Y-m-d');
+            $endDate = $campaign->getEndDate()->format('Y-m-d');;
+            $metrics = implode(',', $profile->getMetrics());
+            $segment = $profile->getSegment();
 
 
+            $data = $analytics->data_ga->get('ga:' . $profileId, $startDate, $endDate, $metrics, array(
+                'dimensions' => 'ga:date',
+                'segment' => $profile->getSegment(),
+            ));
 
-        $startDate          = $campaign->getStartDate()->format('Y-m-d');
-        $endDate            = $campaign->getEndDate()->format('Y-m-d');;
-        $metrics            = 'ga:sessions,ga:pageviews';
-
-        $data = $analytics->data_ga->get('ga:'.$profileId, $startDate, $endDate, $metrics, array(
-            'dimensions'    => 'ga:date',
-        ));
-        $items = $data->getRows();
+            $items = $data->getRows();
 
 
-        foreach ($items as &$row) {
-            $row[0] = strtotime($row[0]) * 1000;
+            foreach (array_values($profile->getMetrics()) as $m => $metricName) {
+                $row = [];
+                foreach ($items as $item) {
+                    $row[] = [
+                        strtotime($item[0]) * 1000,
+                        $item[$m + 1]
+                    ];
+
+                }
+                $reportData[] = [
+                    'label' => ucfirst(substr($metricName, 3)),
+                    'data' => $row,
+                ];
+
+            }
         }
 
         return $this->render(
             '@CampaignChainReportGoogleAnalytics/report.html.twig',
             array(
                 'page_title' => sprintf('Google Analytics for %s on %s', $profile->getDisplayName(), $campaign->getName()),
-                'report_data' => $items
+                'formMetrics' => $formMetrics->createView(),
+                'report_data' => $reportData,
             )
         );
 
