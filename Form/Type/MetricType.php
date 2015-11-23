@@ -31,8 +31,7 @@ class MetricType extends AbstractType
             $builder->add('segment', 'choice', array(
             'choices' => Profile::getSegmentsArray(),
             'expanded' => true,
-            'multiple' => false,
-                'empty_value' => 'None'
+            'multiple' => false
         ));;
     }
 

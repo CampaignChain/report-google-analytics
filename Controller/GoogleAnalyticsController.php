@@ -129,7 +129,7 @@ class GoogleAnalyticsController extends Controller
 
             $data = $analytics->data_ga->get('ga:' . $profileId, $startDate, $endDate, $metrics, array(
                 'dimensions' => 'ga:date',
-                'segment' => $profile->getSegment(),
+                'segment' => $profile->getSegment() ? $profile->getSegment():null,
             ));
 
             $items = $data->getRows();
@@ -157,7 +157,7 @@ class GoogleAnalyticsController extends Controller
             array(
                 'page_title' => sprintf('Google Analytics for %s on %s', $profile->getDisplayName(), $campaign->getName()),
                 'formMetrics' => $formMetrics->createView(),
-                'report_data' => $reportData,
+                'report_data' => $reportData
             )
         );
 
