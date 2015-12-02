@@ -90,6 +90,7 @@ class GoogleAnalyticsController extends Controller
         $profileRepo = $this->getDoctrine()->getRepository('CampaignChainLocationGoogleAnalyticsBundle:Profile');
         /** @var Profile $profile */
         $profile = $profileRepo->findOneById($locationId);
+        $gaMetrics = $profile->getMetrics();
         $location = $profile->getLocation();
         $tokenService = $this->get('campaignchain.security.authentication.client.oauth.token');
         $token = $tokenService->getToken($location);
@@ -97,7 +98,6 @@ class GoogleAnalyticsController extends Controller
         //Form for metrics selection
         $formMetrics = $this->createForm(new MetricType(), $profile);
         $formMetrics->handleRequest($request);
-
 
         if ($formMetrics->isValid()){
             $em = $this->getDoctrine()->getManager();
@@ -118,14 +118,51 @@ class GoogleAnalyticsController extends Controller
             $profileId = $profiles->getItems()[0]['id'];
 
         }
+
+        //Data from the metric facts tables i.e. Facebook Likes
+        $repository = $this->getDoctrine()
+            ->getRepository('CampaignChainCoreBundle:ReportAnalyticsActivityFact');
+
+        $query = $repository->createQueryBuilder('fact');
+        $facts = $query->select('metric.id', 'metric.name', 'channel.name as cname')
+            ->join('fact.metric', 'metric')
+            ->join('fact.activity', 'activity')
+            ->join('activity.channel', 'channel')
+            ->where('fact.campaign = :campaign')
+            ->setParameters([
+                'campaign' => $campaignId,
+            ])
+            ->groupBy('fact.metric')
+            ;
+
+        $facts = $facts->getQuery()->getResult();
+        $factData = array();
+
+        if($facts) {
+            $row = [];
+            foreach ($facts as $fact) {
+                foreach ($this->getDoctrine()->getRepository('CampaignChainCoreBundle:ReportAnalyticsActivityFact')->findBy(
+                    array('campaign' => $campaignId, 'metric' => $fact['id']), ['time' => 'ASC']) as $entry) {
+                    $row[$fact['id']][] = [
+                        $entry->getTime()->getTimestamp() * 1000,
+                        $entry->getValue()];
+                }
+                $factData[] = [
+                    'channelName' => $fact['cname'],
+                    'label' => $fact['name'],
+                    'data' => $row[$fact['id']]
+                ];
+            }
+        }
+
+        //Google Analytics Report Data
         $reportData = [];
-        if (!empty($profile->getMetrics())) {
+        $startDate = $campaign->getStartDate()->format('Y-m-d');
+        $endDate = $campaign->getEndDate()->format('Y-m-d');;
 
-            $startDate = $campaign->getStartDate()->format('Y-m-d');
-            $endDate = $campaign->getEndDate()->format('Y-m-d');;
-            $metrics = implode(',', $profile->getMetrics());
-            $segment = $profile->getSegment();
+        if (!empty($gaMetrics)) {
 
+            $metrics = implode(',', $gaMetrics);
 
             $data = $analytics->data_ga->get('ga:' . $profileId, $startDate, $endDate, $metrics, array(
                 'dimensions' => 'ga:date',
@@ -135,12 +172,13 @@ class GoogleAnalyticsController extends Controller
             $items = $data->getRows();
 
 
-            foreach (array_values($profile->getMetrics()) as $m => $metricName) {
+            foreach (array_values($gaMetrics) as $m => $metricName) {
                 $row = [];
                 foreach ($items as $item) {
                     $row[] = [
                         strtotime($item[0]) * 1000,
-                        $item[$m + 1]
+                        (int) $item[$m + 1]
+
                     ];
 
                 }
@@ -148,16 +186,22 @@ class GoogleAnalyticsController extends Controller
                     'label' => ucfirst(substr($metricName, 3)),
                     'data' => $row,
                 ];
-
+                dump($reportData);
             }
         }
+
 
         return $this->render(
             '@CampaignChainReportGoogleAnalytics/report.html.twig',
             array(
                 'page_title' => sprintf('Google Analytics for %s on %s', $profile->getDisplayName(), $campaign->getName()),
+                'belonging_location' => $profile->getBelongingLocation()->getUrl(),
                 'formMetrics' => $formMetrics->createView(),
-                'report_data' => $reportData
+                'report_data' => $reportData,
+                'fact_data' => $factData,
+                'start_date' => $startDate,
+                'end_date' => $endDate
+
             )
         );
 
