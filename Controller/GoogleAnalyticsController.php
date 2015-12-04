@@ -11,6 +11,7 @@
 namespace CampaignChain\Report\GoogleAnalyticsBundle\Controller;
 
 use CampaignChain\CoreBundle\Entity\Campaign;
+use CampaignChain\CoreBundle\Entity\ReportAnalyticsActivityFact;
 use CampaignChain\Location\GoogleAnalyticsBundle\Entity\Profile;
 use CampaignChain\Report\GoogleAnalyticsBundle\Form\Type\MetricType;
 use CampaignChain\Report\GoogleAnalyticsBundle\Form\Type\SegmentType;
@@ -124,7 +125,7 @@ class GoogleAnalyticsController extends Controller
             ->getRepository('CampaignChainCoreBundle:ReportAnalyticsActivityFact');
 
         $query = $repository->createQueryBuilder('fact');
-        $facts = $query->select('metric.id', 'metric.name', 'channel.name as cname')
+        $facts = $query->select('activity', 'fact', 'metric', 'channel')
             ->join('fact.metric', 'metric')
             ->join('fact.activity', 'activity')
             ->join('activity.channel', 'channel')
@@ -140,20 +141,25 @@ class GoogleAnalyticsController extends Controller
 
         if($facts) {
             $row = [];
+            /** @var ReportAnalyticsActivityFact[] $facts */
             foreach ($facts as $fact) {
-                foreach ($this->getDoctrine()->getRepository('CampaignChainCoreBundle:ReportAnalyticsActivityFact')->findBy(
-                    array('campaign' => $campaignId, 'metric' => $fact['id']), ['time' => 'ASC']) as $entry) {
-                    $row[$fact['id']][] = [
+                /** @var ReportAnalyticsActivityFact[] $entrys */
+                $entrys = $this->getDoctrine()->getRepository('CampaignChainCoreBundle:ReportAnalyticsActivityFact')->findBy(
+                    array('campaign' => $campaignId, 'metric' => $fact->getMetric()->getId()), ['time' => 'ASC']);
+
+                foreach ($entrys as $entry) {
+                    $row[$fact->getId()][] = [
                         $entry->getTime()->getTimestamp() * 1000,
                         $entry->getValue()];
                 }
                 $factData[] = [
-                    'channelName' => $fact['cname'],
-                    'label' => $fact['name'],
-                    'data' => $row[$fact['id']]
+                    'channel' => $fact->getActivity()->getChannel(),
+                    'label' => $fact->getMetric()->getName(),
+                    'data' => $row[$fact->getId()]
                 ];
             }
         }
+
 
         //Google Analytics Report Data
         $reportData = [];
@@ -186,7 +192,6 @@ class GoogleAnalyticsController extends Controller
                     'label' => ucfirst(substr($metricName, 3)),
                     'data' => $row,
                 ];
-                dump($reportData);
             }
         }
 
@@ -200,7 +205,8 @@ class GoogleAnalyticsController extends Controller
                 'report_data' => $reportData,
                 'fact_data' => $factData,
                 'start_date' => $startDate,
-                'end_date' => $endDate
+                'end_date' => $endDate,
+
 
             )
         );

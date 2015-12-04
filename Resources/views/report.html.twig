@@ -40,25 +40,23 @@ file that was distributed with this source code.
 
     {% if report_data is defined and report_data is iterable %}
         {# // The series point styles available with Flot. #}
-            <form method="POST" class="form-horizontal" role="form" enctype="multipart/form-data">
-                {{ bootstrap_set_style('horizontal') }}
-                {{ bootstrap_set_widget_col(6) }}
-                {{ bootstrap_set_label_col(2) }}
-                {{ form_widget(formMetrics) }}
-                <div class="form-group">
-                    <div class="col-lg-offset-2 col-lg-6">
-                        <div class="btn-group pull-right" role="group" aria-label="...">
-                            {% include 'CampaignChainCoreBundle:Base:form_footer_buttons.html.twig' %}
-                        </div>
-                    </div>
-                </div>
+            <form method="POST" class="form-inline" role="form" enctype="multipart/form-data">
+                {{ bootstrap_set_style('inline') }}
+                {#{{ bootstrap_set_widget_col(6) }}#}
+                {#{{ bootstrap_set_label_col(2) }} #}
+                {#{{ form_widget(formMetrics) }}#}
+                {{ form_row(formMetrics.metrics, {'style': 'horizontal', 'label_col': 2, 'widget_col': 10 }) }}
+                {{ form_row(formMetrics.segment, {'style': 'horizontal', 'label_col': 2, 'widget_col': 10 }) }}
+                {{ form_rest(formMetrics) }}
+                <button class="btn btn-primary" type="submit"><i class="fa fa-area-chart"></i> Show</button>
             </form>
 
-        {% block form_footer %}{% endblock %}
+        {#{% block form_footer %}{% endblock %}#}
 
 
 
-        {% set flot_styles = { 0: 'circle', 1: 'square', 2: 'diamond', 3: 'triangle', 4:'cross' } %}
+
+        {#{% set flot_styles = { 0: 'circle', 1: 'square', 2: 'diamond', 3: 'triangle', 4:'cross' } %}#}
 
         <script type="text/javascript">
 
@@ -255,10 +253,11 @@ file that was distributed with this source code.
             <div class="span12">
                 <h1>Google Analytics</h1>
                 <div id="placeholder_ga" style="width:100%;height:300px;" class="campaignchain-flot">
-
                 </div>
+                <br>
                 {% for fact in fact_data %}
-                    <h1>{{ fact.channelName ~ ' - ' ~ fact.label}}</h1>
+                    {{ fact.channel|campaignchain_tpl_teaser({ label: fact.channel.name ~ ' - ' ~ fact.label}) }}
+                    {#<h2 style="display: inline-block; vertical-align: middle">{{ fact.channel.name ~ ' - ' ~ fact.label}}</h2>#}
                 <div id="placeholder_facts_{{ fact.label | lower}}" style="width:100%;height:300px;" class="campaignchain-flot"></div>
                 {% endfor %}
             </div>
