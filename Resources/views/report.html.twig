@@ -39,18 +39,34 @@ file that was distributed with this source code.
     {% endjavascripts %}
 
     {% if report_data is defined and report_data is iterable %}
+        <div class="row">
         {# // The series point styles available with Flot. #}
             <form method="POST" class="form-inline" role="form" enctype="multipart/form-data">
                 {{ bootstrap_set_style('inline') }}
                 {#{{ bootstrap_set_widget_col(6) }}#}
                 {#{{ bootstrap_set_label_col(2) }} #}
                 {#{{ form_widget(formMetrics) }}#}
-                {{ form_row(formMetrics.metrics, {'style': 'horizontal', 'label_col': 2, 'widget_col': 10 }) }}
-                {{ form_row(formMetrics.segment, {'style': 'horizontal', 'label_col': 2, 'widget_col': 10 }) }}
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                        {{ form_row(formMetrics.metrics, {'style': 'horizontal', 'label_col': 3, 'widget_col': 9 }) }}
+                        </div>
+                    </div>
+                    </div>
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            {{ form_row(formMetrics.segment, {'style': 'horizontal', 'label_col': 3, 'widget_col': 9 }) }}
+                        </div>
+                    </div>
+                </div>
                 {{ form_rest(formMetrics) }}
-                <button class="btn btn-primary" type="submit"><i class="fa fa-area-chart"></i> Show</button>
+                <div class="col-md-4">
+                 <button class="btn btn-primary" type="submit"><i class="fa fa-area-chart"></i> Show</button>
+                </div>
             </form>
 
+        </div>
         {#{% block form_footer %}{% endblock %}#}
 
 
@@ -251,12 +267,22 @@ file that was distributed with this source code.
 
         <div class="row-fluid">
             <div class="span12">
-                <h1>Google Analytics</h1>
+                <div id="campaignchain-chart-header">
+                    <div class="campaignchain-sticky-heading">
+                        <h1>Website</h1>
+                        {{ profile.getLocation()|campaignchain_tpl_teaser }}
+                    </div>
+                </div>
                 <div id="placeholder_ga" style="width:100%;height:300px;" class="campaignchain-flot">
                 </div>
                 <br>
                 {% for fact in fact_data %}
-                    {{ fact.channel|campaignchain_tpl_teaser({ label: fact.channel.name ~ ' - ' ~ fact.label}) }}
+                    <div id="campaignchain-chart-header">
+                        <div class="campaignchain-sticky-heading">
+                            <h1>{{ fact.location|campaignchain_tpl_teaser({ only_context_icon: true}) }} {{ fact.label }}</h1>
+
+                        </div>
+                    </div>
                     {#<h2 style="display: inline-block; vertical-align: middle">{{ fact.channel.name ~ ' - ' ~ fact.label}}</h2>#}
                 <div id="placeholder_facts_{{ fact.label | lower}}" style="width:100%;height:300px;" class="campaignchain-flot"></div>
                 {% endfor %}

@@ -21,7 +21,7 @@ class MetricType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('metrics', 'choice', array(
-            'label' => 'Select Metrics',
+            'label' => 'Metrics',
             'choices' => Profile::getMetricsArray(),
             'expanded' => true,
             'multiple' => true,
@@ -30,7 +30,7 @@ class MetricType extends AbstractType
             )
         ));
             $builder->add('segment', 'choice', array(
-                'label' => 'Select Segment',
+                'label' => 'Segments',
                 'choices' => Profile::getSegmentsArray(),
             'expanded' => true,
             'multiple' => false

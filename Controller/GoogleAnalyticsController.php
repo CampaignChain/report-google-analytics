@@ -154,6 +154,7 @@ class GoogleAnalyticsController extends Controller
                 }
                 $factData[] = [
                     'channel' => $fact->getActivity()->getChannel(),
+                    'location' => $fact->getActivity()->getLocation(),
                     'label' => $fact->getMetric()->getName(),
                     'data' => $row[$fact->getId()]
                 ];
@@ -199,7 +200,8 @@ class GoogleAnalyticsController extends Controller
         return $this->render(
             '@CampaignChainReportGoogleAnalytics/report.html.twig',
             array(
-                'page_title' => sprintf('Google Analytics for %s on %s', $profile->getDisplayName(), $campaign->getName()),
+                'page_title' => 'Google Analytics Report',
+                'profile' => $profile,
                 'belonging_location' => $profile->getBelongingLocation()->getUrl(),
                 'formMetrics' => $formMetrics->createView(),
                 'report_data' => $reportData,
