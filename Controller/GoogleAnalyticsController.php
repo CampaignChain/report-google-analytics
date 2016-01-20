@@ -43,13 +43,16 @@ class GoogleAnalyticsController extends Controller
                     return $er->createQueryBuilder('campaign')
                         ->select('cpgn')
                         ->from('CampaignChain\CoreBundle\Entity\Campaign', 'cpgn')
-                        ->orderBy('campaign.startDate', 'ASC');
+                        ->where('cpgn.startDate < :today')
+                        ->orderBy('cpgn.startDate', 'ASC')
+                        ->setParameter('today', date("Y-m-d H:i:s"));
                 },
                 'property' => 'name',
                 'empty_value' => 'Select a Campaign',
                 'empty_data' => null,
             ))
             ->getForm();
+
 
         $form->handleRequest($request);
 
