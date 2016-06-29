@@ -114,15 +114,6 @@ class GoogleAnalyticsController extends Controller
 
         $analytics = $this->get('campaignchain_report_google_analytics.service_client')->getService($token);
 
-        $prop = $analytics->management_webproperties->get($profile->getAccountId(), $profile->getProfileId());
-        $profileId = $prop->getDefaultProfileId();
-
-        if ($profileId === null) {
-            $profiles = $analytics->management_profiles->listManagementProfiles($profile->getAccountId(), $profile->getProfileId());
-            $profileId = $profiles->getItems()[0]['id'];
-
-        }
-
         //Data from the metric facts tables i.e. Facebook Likes
         $repository = $this->getDoctrine()
             ->getRepository('CampaignChainCoreBundle:ReportAnalyticsActivityFact');
@@ -174,7 +165,7 @@ class GoogleAnalyticsController extends Controller
 
             $metrics = implode(',', $gaMetrics);
 
-            $data = $analytics->data_ga->get('ga:' . $profileId, $startDate, $endDate, $metrics, array(
+            $data = $analytics->data_ga->get('ga:' . $profile->getProfileId(), $startDate, $endDate, $metrics, array(
                 'dimensions' => 'ga:date',
                 'segment' => $profile->getSegment() ? $profile->getSegment():null,
             ));
