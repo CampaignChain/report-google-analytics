@@ -17,8 +17,13 @@
 
 namespace CampaignChain\Report\GoogleAnalyticsBundle;
 
+use CampaignChain\Report\GoogleAnalyticsBundle\DependencyInjection\CampaignChainReportGoogleAnalyticsExtension;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class CampaignChainReportGoogleAnalyticsBundle extends Bundle
 {
+    public function getContainerExtension()
+    {
+        return new CampaignChainReportGoogleAnalyticsExtension();
+    }
 }
