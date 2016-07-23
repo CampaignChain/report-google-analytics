@@ -17,7 +17,7 @@
 
 namespace CampaignChain\Report\GoogleAnalyticsBundle\Resources\update\data;
 
-use CampaignChain\DeploymentUpdateBundle\Service\DataUpdateInterface;
+use CampaignChain\UpdateBundle\Service\DataUpdateInterface;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
