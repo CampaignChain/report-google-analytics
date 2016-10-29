@@ -18,19 +18,19 @@
 namespace CampaignChain\Report\GoogleAnalyticsBundle\Resources\update\data;
 
 use CampaignChain\UpdateBundle\Service\DataUpdateInterface;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class UpdateGoogleProfileEntities implements DataUpdateInterface
 {
     /**
-     * @var EntityManager
+     * @var Registry
      */
-    private $entityManager;
+    private $em;
 
-    public function __construct(EntityManager $entityManager)
+    public function __construct(ManagerRegistry $managerRegistry)
     {
-        $this->entityManager = $entityManager;
+        $this->em = $managerRegistry->getManager();
     }
 
     public function getVersion()
@@ -49,7 +49,7 @@ class UpdateGoogleProfileEntities implements DataUpdateInterface
 
     public function execute(SymfonyStyle $io = null)
     {
-        $currentProfiles = $this->entityManager
+        $currentProfiles = $this->em
             ->getRepository('CampaignChainLocationGoogleAnalyticsBundle:Profile')
             ->findAll();
 
@@ -77,10 +77,10 @@ class UpdateGoogleProfileEntities implements DataUpdateInterface
                 $profile->setIdentifier($profile->getProfileId());
             }
 
-            $this->entityManager->persist($profile);
+            $this->em->persist($profile);
         }
 
-        $this->entityManager->flush();
+        $this->em->flush();
 
         return true;
     }

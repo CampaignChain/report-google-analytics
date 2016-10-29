@@ -19,6 +19,6 @@ services:
     campaignchain_report_google_analytics.update.profile:
         class: CampaignChain\Report\GoogleAnalyticsBundle\Resources\update\data\UpdateGoogleProfileEntities
         arguments:
-            - '@doctrine.orm.entity_manager'
+            - '@doctrine'
         tags:
             - { name: campaignchain.update.data }
