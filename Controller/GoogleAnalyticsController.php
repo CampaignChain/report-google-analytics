@@ -48,10 +48,16 @@ class GoogleAnalyticsController extends Controller
                 // Only display campaigns for selection that actually have report data
                 'query_builder' => function(EntityRepository $er) {
                     return $er->createQueryBuilder('campaign')
-                        ->select('cpgn')
-                        ->from('CampaignChain\CoreBundle\Entity\Campaign', 'cpgn')
-                        ->where('cpgn.startDate < :today')
-                        ->orderBy('cpgn.startDate', 'ASC')
+                        // Exclude repeating campaigns or templates
+                        ->where('campaign.startDate != :relativeStartDate')
+                        ->setParameter('relativeStartDate', Campaign::RELATIVE_START_DATE)
+                        // Only show campaigns that already started
+                        ->andWhere('campaign.startDate < :today')
+                        // Show only campaigns that actually have Activities facts.
+                        ->andWhere(
+                            "EXISTS (SELECT af.id FROM CampaignChain\CoreBundle\Entity\ReportAnalyticsActivityFact af WHERE af.campaign = campaign.id)"
+                        )
+                        ->orderBy('campaign.startDate', 'ASC')
                         ->setParameter('today', date("Y-m-d H:i:s"));
                 },
                 'property' => 'name',
@@ -172,10 +178,15 @@ class GoogleAnalyticsController extends Controller
 
             $metrics = implode(',', $gaMetrics);
 
-            $data = $analytics->data_ga->get('ga:' . $profile->getProfileId(), $startDate, $endDate, $metrics, array(
-                'dimensions' => 'ga:date',
-                'segment' => $profile->getSegment() ? $profile->getSegment():null,
-            ));
+            try {
+                $data = $analytics->data_ga->get('ga:' . $profile->getProfileId(), $startDate, $endDate, $metrics, array(
+                    'dimensions' => 'ga:date',
+                    'segment' => $profile->getSegment() ? $profile->getSegment() : null,
+                ));
+            } catch (\Exception $e) {
+                $this->addFlash('warning', $e->getMessage());
+                return $this->redirectToRoute('campaignchain_report_google_analytics_index');
+            }
 
             $items = $data->getRows();
 

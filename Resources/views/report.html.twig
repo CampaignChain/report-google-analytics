@@ -8,65 +8,50 @@ file that was distributed with this source code.
 #}
 
 {% extends 'CampaignChainCoreBundle:Base:base.html.twig' %}
+{% import 'CampaignChainCoreBundle:Macros:report.html.twig' as reportMacro %}
 
 {% block javascripts %}
     {{ parent() }}
-    {% javascripts '@flot_js' combine=true %}
-    <script src="{{ asset_url }}"></script>
-    {% endjavascripts %}
-    {% javascripts '@flot_comments_js' %}
-    <!-- flot comments --><script src="{{ asset_url }}"></script>
-    {% endjavascripts %}
-    {% javascripts '@flot_tooltip_js' %}
-    <script src="{{ asset_url }}"></script>
-    {% endjavascripts %}
+    {{ reportMacro.metricsGraphJs() }}
 {% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    {% stylesheets '@select2_css' combine=true %}
-    <link href="{{ asset_url }}" type="text/css" rel="stylesheet" />
-    {% endstylesheets %}
-    {% stylesheets '@campaignchain_flot_css' filter="cssrewrite" output="media/css/*.css"
-    'bundles/campaignchaincore/css/*'%}
-    <link href="{{ asset_url }}" type="text/css" rel="stylesheet" />
-    {% endstylesheets %}
+    {{ reportMacro.metricsGraphCss() }}
 {% endblock %}
 
 {% block body %}
-    {% javascripts '@select2_js' %}
-    <script src="{{ asset_url }}"></script>
-    {% endjavascripts %}
-
     {% if report_data is defined and report_data is iterable %}
-        <div class="row">
         {# // The series point styles available with Flot. #}
-            <form method="POST" class="form-inline" role="form" enctype="multipart/form-data">
-                {{ bootstrap_set_style('inline') }}
-                {#{{ bootstrap_set_widget_col(6) }}#}
-                {#{{ bootstrap_set_label_col(2) }} #}
-                {#{{ form_widget(formMetrics) }}#}
-                <div class="col-md-4">
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                        {{ form_row(formMetrics.metrics, {'style': 'horizontal', 'label_col': 3, 'widget_col': 9 }) }}
+            {% embed 'AvanzuAdminThemeBundle:Widgets:box-widget.html.twig' %}
+                {% block box_before %}
+                    <form method="POST" class="form-inline" role="form" enctype="multipart/form-data">
+                    {{ bootstrap_set_style('inline') }}
+                {% endblock %}
+                {% block box_body %}
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                            {{ form_row(formMetrics.metrics, {'style': 'horizontal', 'label_col': 3, 'widget_col': 9 }) }}
+                            </div>
+                        </div>
+                        </div>
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                {{ form_row(formMetrics.segment, {'style': 'horizontal', 'label_col': 3, 'widget_col': 9 }) }}
+                            </div>
                         </div>
                     </div>
-                    </div>
-                <div class="col-md-4">
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            {{ form_row(formMetrics.segment, {'style': 'horizontal', 'label_col': 3, 'widget_col': 9 }) }}
-                        </div>
-                    </div>
-                </div>
-                {{ form_rest(formMetrics) }}
-                <div class="col-md-4">
-                 <button class="btn btn-primary" type="submit"><i class="fa fa-area-chart"></i> Show</button>
-                </div>
-            </form>
-
-        </div>
+                    {{ form_rest(formMetrics) }}
+                {% endblock %}
+                {% block box_footer %}
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-area-chart"></i> Show</button>
+                {% endblock %}
+                {% block box_after %}
+                    </form>
+                {% endblock %}
+            {% endembed %}
         {#{% block form_footer %}{% endblock %}#}
 
 
@@ -180,73 +165,72 @@ file that was distributed with this source code.
 
                 //Iterate over all fact metrics and plot them
                 {% if fact_data is defined and fact_data is iterable %}
-                {% for fact in fact_data %}
-                plot_{{ fact.label | lower }} = $.plot("#placeholder_facts_{{ fact.label | lower }}", [{{ fact|json_encode()|raw  }}], {
-                    crosshair: { mode: "x" },
-                    grid: {
-                        show: true,
-                        markingsLineWidth: 1,
-                        hoverable: true
-                    },
-                    series: {
-                        lines: { show: true, colors: "#000", fill: true, fillColor: '#eee' },
-                        points: { show: true, colors: '#000' },
-                    },
-                    xaxis: {
-                        mode: "time",
-                        tickSize: [7, "day"],
-                        min: (new Date('{{ start_date }}')).getTime(),
-                        max: (new Date('{{ end_date }}')).getTime()
-                    },
-                    yaxis: {
-                        min: 0,
-                        autoscaleMargin: 0.4,
-                    },
-                    tooltip: {
-                        show: false,
-                        cssClass: '{{ fact.label | lower }}'
-                    },
-                    tooltipOpts: {
-                      xDateFormat:    '%a, %b %e, %Y',
-                        content:        "<label>%x</label><br/>%s: %y"
-                    },
-                    legend: {
-                        show: true,
-                        position: "nw",
-                        noColumns: 1,
-                        placement: 'outsideGrid'
-                    },
-                    points: {
-                        show: false,
-                        radius: 3
-                    },
-                    //colors: ["#31708F"],
-                });
+                    {% for fact in fact_data %}
+                        plot_{{ fact.label | lower }} = $.plot("#placeholder_facts_{{ fact.label | lower }}", [{{ fact|json_encode()|raw  }}], {
+                            crosshair: { mode: "x" },
+                            grid: {
+                                show: true,
+                                markingsLineWidth: 1,
+                                hoverable: true
+                            },
+                            series: {
+                                lines: { show: true, colors: "#000", fill: true, fillColor: '#eee' },
+                                points: { show: true, colors: '#000' },
+                            },
+                            xaxis: {
+                                mode: "time",
+                                tickSize: [7, "day"],
+                                min: (new Date('{{ start_date }}')).getTime(),
+                                max: (new Date('{{ end_date }}')).getTime()
+                            },
+                            yaxis: {
+                                min: 0,
+                                autoscaleMargin: 0.4,
+                            },
+                            tooltip: {
+                                show: false,
+                                cssClass: '{{ fact.label | lower }}'
+                            },
+                            tooltipOpts: {
+                              xDateFormat:    '%a, %b %e, %Y',
+                                content:        "<label>%x</label><br/>%s: %y"
+                            },
+                            legend: {
+                                show: true,
+                                position: "nw",
+                                noColumns: 1,
+                                placement: 'outsideGrid'
+                            },
+                            points: {
+                                show: false,
+                                radius: 3
+                            },
+                            //colors: ["#31708F"],
+                        });
 
 
-                $("#placeholder_facts_{{ fact.label | lower }}").bind("plothover",  function (event, pos, item)
-                {
-                    updateLegendData(pos);
+                        $("#placeholder_facts_{{ fact.label | lower }}").bind("plothover",  function (event, pos, item)
+                        {
+                            updateLegendData(pos);
 
-                    plot_ga.setCrosshair({x: pos.x});
-                    {% for fact_node in fact_data %}
-                    plot_{{ fact_node.label | lower }}.setCrosshair({x: pos.x});
+                            plot_ga.setCrosshair({x: pos.x});
+                            {% for fact_node in fact_data %}
+                            plot_{{ fact_node.label | lower }}.setCrosshair({x: pos.x});
+                            {% endfor %}
+
+                        });
+                        //Remove crosshair in all graphs when leaving one of them
+                        $("#placeholder_ga").mouseleave(function() {
+                            plot_{{ fact.label | lower }}.clearCrosshair();
+                        });
+                        $("#placeholder_facts_{{ fact.label | lower }}").mouseleave(function() {
+                            plot_ga.clearCrosshair();
+                            {% for fact_node in fact_data %}
+                            plot_{{ fact_node.label | lower }}.clearCrosshair();
+                            {% endfor %}
+
+                        });
                     {% endfor %}
-
-                });
-                //Remove crosshair in all graphs when leaving one of them
-                $("#placeholder_ga").mouseleave(function() {
-                    plot_{{ fact.label | lower }}.clearCrosshair();
-                });
-                $("#placeholder_facts_{{ fact.label | lower }}").mouseleave(function() {
-                    plot_ga.clearCrosshair();
-                    {% for fact_node in fact_data %}
-                    plot_{{ fact_node.label | lower }}.clearCrosshair();
-                    {% endfor %}
-
-                });
-
-                {% endfor %}
                 {% endif %}
 
                 //Draw crosshair in all graphs when entering one of them
@@ -267,24 +251,27 @@ file that was distributed with this source code.
 
         <div class="row-fluid">
             <div class="span12">
-                <div id="campaignchain-chart-header">
-                    <div class="campaignchain-sticky-heading">
-                        <h1>Website</h1>
+                <div id="campaignchain-chart-ga">
+                {% embed 'AvanzuAdminThemeBundle:Widgets:box-widget.html.twig' %}
+                    {% block box_title %}
                         {{ profile.getLocation()|campaignchain_tpl_teaser }}
-                    </div>
+                    {% endblock %}
+                    {% block box_body %}
+                        <div id="placeholder_ga" style="width:100%;height:300px;" class="campaignchain-flot">
+                    {% endblock %}
+                {% endembed %}
                 </div>
-                <div id="placeholder_ga" style="width:100%;height:300px;" class="campaignchain-flot">
-                </div>
-                <br>
                 {% for fact in fact_data %}
-                    <div id="campaignchain-chart-header">
-                        <div class="campaignchain-sticky-heading">
-                            <h1>{{ fact.location|campaignchain_tpl_teaser({ only_context_icon: true}) }} {{ fact.label }}</h1>
-
-                        </div>
+                    <div id="campaignchain-chart-{{ fact.label | lower}}">
+                    {% embed 'AvanzuAdminThemeBundle:Widgets:box-widget.html.twig' %}
+                        {% block box_title %}
+                            {{ fact.location|campaignchain_tpl_teaser({ only_context_icon: true}) }} {{ fact.label }}
+                        {% endblock %}
+                        {% block box_body %}
+                            <div id="placeholder_facts_{{ fact.label | lower}}" style="width:100%;height:300px;" class="campaignchain-flot"></div>
+                        {% endblock %}
+                    {% endembed %}
                     </div>
-                    {#<h2 style="display: inline-block; vertical-align: middle">{{ fact.channel.name ~ ' - ' ~ fact.label}}</h2>#}
-                <div id="placeholder_facts_{{ fact.label | lower}}" style="width:100%;height:300px;" class="campaignchain-flot"></div>
                 {% endfor %}
             </div>
         </div>
