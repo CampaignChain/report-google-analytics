@@ -15,7 +15,7 @@
 services:
     campaignchain_report_google_analytics.service_client:
         class: CampaignChain\Report\GoogleAnalyticsBundle\Service\AnalyticsApiClient
-        arguments: [@campaignchain.core.location, @campaignchain.security.authentication.client.oauth.application, @campaignchain.security.authentication.client.oauth.token]
+        arguments: ['@campaignchain.core.location', '@campaignchain.security.authentication.client.oauth.application', '@campaignchain.security.authentication.client.oauth.token']
     campaignchain_report_google_analytics.update.profile:
         class: CampaignChain\Report\GoogleAnalyticsBundle\Resources\update\data\UpdateGoogleProfileEntities
         arguments:

@@ -13,11 +13,11 @@
 # limitations under the License.
 
 campaignchain_report_google_analytics_index:
-    pattern: /report/google-analytics/index
+    path: /report/google-analytics/index
     defaults: { _controller: CampaignChainReportGoogleAnalyticsBundle:GoogleAnalytics:index }
 
 campaignchain_report_google_analytics_report:
-    pattern: /report/google-analytics/report/{locationId}/{campaignId}
+    path: /report/google-analytics/report/{locationId}/{campaignId}
     defaults: { _controller: CampaignChainReportGoogleAnalyticsBundle:GoogleAnalytics:report }
 
 
