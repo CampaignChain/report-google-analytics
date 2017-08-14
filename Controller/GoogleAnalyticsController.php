@@ -113,7 +113,7 @@ class GoogleAnalyticsController extends Controller
         $token = $tokenService->getToken($location);
 
         //Form for metrics selection
-        $formMetrics = $this->createForm(new MetricType(), $profile);
+        $formMetrics = $this->createForm(MetricType::class, $profile);
         $formMetrics->handleRequest($request);
 
         if ($formMetrics->isValid()){
