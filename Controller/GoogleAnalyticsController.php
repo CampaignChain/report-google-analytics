@@ -38,8 +38,8 @@ class GoogleAnalyticsController extends Controller
             ->add('locaton', 'entity', array(
                 'label' => 'Profile',
                 'class' => 'CampaignChainLocationGoogleAnalyticsBundle:Profile',
-                'property' => 'displayName',
-                'empty_value' => 'Select a Google Analytics Profile',
+                'choice_label' => 'displayName',
+                'placeholder' => 'Select a Google Analytics Profile',
                 'empty_data' => null,
             ))
             ->add('campaign', 'entity', array(
@@ -60,8 +60,8 @@ class GoogleAnalyticsController extends Controller
                         ->orderBy('campaign.startDate', 'ASC')
                         ->setParameter('today', date("Y-m-d H:i:s"));
                 },
-                'property' => 'name',
-                'empty_value' => 'Select a Campaign',
+                'choice_label' => 'name',
+                'placeholder' => 'Select a Campaign',
                 'empty_data' => null,
             ))
             ->getForm();
