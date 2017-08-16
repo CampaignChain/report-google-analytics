@@ -51,7 +51,7 @@ class MetricType extends AbstractType
        ));
     }
 
-    public function getName()
+    public function getBlockPrefix()
     {
        return 'campaignchain_report_google_analytics_metric';
     }
