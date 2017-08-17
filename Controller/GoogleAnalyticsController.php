@@ -17,6 +17,7 @@
 
 namespace CampaignChain\Report\GoogleAnalyticsBundle\Controller;
 
+use CampaignChain\Channel\GoogleAnalyticsBundle\Service\RestClient;
 use CampaignChain\CoreBundle\Entity\Campaign;
 use CampaignChain\CoreBundle\Entity\ReportAnalyticsActivityFact;
 use CampaignChain\Location\GoogleAnalyticsBundle\Entity\Profile;
@@ -109,8 +110,6 @@ class GoogleAnalyticsController extends Controller
         $profile = $profileRepo->findOneById($locationId);
         $gaMetrics = $profile->getMetrics();
         $location = $profile->getLocation();
-        $tokenService = $this->get('campaignchain.security.authentication.client.oauth.token');
-        $token = $tokenService->getToken($location);
 
         //Form for metrics selection
         $formMetrics = $this->createForm(new MetricType(), $profile);
@@ -125,7 +124,9 @@ class GoogleAnalyticsController extends Controller
         }
 
 
-        $analytics = $this->get('campaignchain_report_google_analytics.service_client')->getService($token);
+        /** @var RestClient $client */
+        $client = $this->get('campaignchain.channel.google_analytics.rest_client');
+        $connection = $client->connectByLocation($location);
 
         //Data from the metric facts tables i.e. Facebook Likes
         $repository = $this->getDoctrine()
@@ -179,10 +180,11 @@ class GoogleAnalyticsController extends Controller
             $metrics = implode(',', $gaMetrics);
 
             try {
-                $data = $analytics->data_ga->get('ga:' . $profile->getProfileId(), $startDate, $endDate, $metrics, array(
-                    'dimensions' => 'ga:date',
-                    'segment' => $profile->getSegment() ? $profile->getSegment() : null,
-                ));
+                $data = $connection->getTraffic(
+                    $startDate, $endDate,
+                    $metrics,
+                    $profile->getSegment() ? $profile->getSegment() : null
+                );
             } catch (\Exception $e) {
                 $this->addFlash('warning', $e->getMessage());
                 return $this->redirectToRoute('campaignchain_report_google_analytics_index');
