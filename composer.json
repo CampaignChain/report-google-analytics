@@ -18,8 +18,7 @@
     },
     "require": {
         "campaignchain/channel-google-analytics": "1.0.x-dev",
-        "campaignchain/location-google-analytics": "1.0.x-dev",
-        "google/apiclient": "1.0.*@beta"
+        "campaignchain/location-google-analytics": "1.0.x-dev"
     },
     "autoload": {
         "psr-4": { "CampaignChain\\Report\\GoogleAnalyticsBundle\\": "" }
